@@ -1,5 +1,5 @@
 Intruction\
-pip install flet\ 
+pip install flet\
 flet -r sidebar.py\
 sidebar not yet functioning\
 database not yet implemented\

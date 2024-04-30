@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-
+from user_database import cursor, conn  # Importing the database connection
+import sqlite3
 
 def create_register_page():
     def create_account():
@@ -19,12 +20,24 @@ def create_register_page():
             return
         if password != confirm_password:
             messagebox.showerror("Error", "Password and Confirm Password do not match!")
-        elif not email.endswith('@gmail.com'):
+            return
+        if not email.endswith('@gmail.com'):
             messagebox.showerror("Error", "Please enter a valid Gmail address.")
-        else:
+            return
+
+        try:
+            # Insert user data into the database
+            cursor.execute('''
+                INSERT INTO users (name, age, address, email, username, password)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (name, age, address, email, username, password))
+            conn.commit()
+
             messagebox.showinfo("Success", "Account created successfully!")
             page.destroy()
             create_login_page()
+        except sqlite3.IntegrityError:
+            messagebox.showerror("Error", "Username already taken. Please choose a different username.")
 
     page = tk.Tk()
     page.title('REGISTER')
@@ -152,6 +165,20 @@ def create_register_page():
 
 
 def create_login_page():
+    def login_clicked():
+        username = username_entry.get()
+        password = password_entry.get()
+
+        # Check if username and password are in the database
+        cursor.execute('SELECT * FROM users WHERE username=? AND password=?', (username, password))
+        user = cursor.fetchone()
+        if user:
+            messagebox.showinfo("Success", "Login successful!")
+            page.destroy()
+            # Implement the logic to navigate to the next page after successful login
+        else:
+            messagebox.showerror("Error", "Invalid username or password.")
+
     page = tk.Tk()
     page.title('Login')
     page.geometry('500x750')
@@ -200,9 +227,6 @@ def create_login_page():
 
     password_entry = ttk.Entry(page, font=('Arial', 14), show='*')
     password_entry.place(relx=0.5, rely=0.45, relwidth=0.8, relheight=0.05, anchor='center')
-
-    def login_clicked():
-        page.destroy()
 
     login_button = ttk.Button(
         page,

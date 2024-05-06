@@ -1,0 +1,11 @@
+Laoag, Manila, 07:00 AM, First Class, 1000
+Laoag, Manila, 12:30 PM, First Class, 1000
+Laoag, Manila, 06:00 PM, First Class, 1000
+Laoag, Manila, 07:00 PM, First Class, 1000
+Laoag, Manila, 08:00 PM, First Class, 1000
+Laoag, Manila, 08:30 PM, First Class, 1000
+Laoag, Manila, 09:00 PM, First Class, 1000
+Laoag, Manila, 09:30 PM, First Class, 1000
+Laoag, Manila, 10:00 PM, Super Deluxe, 1100
+Laoag, Manila, 10:30 PM, Super First Class, 1000
+Laoag, Manila, 11:00 PM, Super Deluxe, 1000

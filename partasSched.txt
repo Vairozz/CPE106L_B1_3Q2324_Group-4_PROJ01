@@ -1,0 +1,8 @@
+Manila, La Union, 9:00 AM, Deluxe, 1000
+Manila, La Union, 4:00 PM, Deluxe, 1000
+Manila, La Union, 7:00 PM, Deluxe, 1000
+Manila, La Union, 8:00 PM, Deluxe, 1000
+Manila, La Union, 8:00 PM, Super Deluxe, 1200
+Manila, La Union, 9:00 PM, Super Deluxe, 1200
+Manila, La Union, 10:00 PM, Super Deluxe, 1200
+Manila, La Union, 11:55 PM, Deluxe, 1000

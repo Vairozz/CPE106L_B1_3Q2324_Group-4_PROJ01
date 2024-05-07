@@ -3,13 +3,83 @@ from tkinter import ttk, messagebox
 import sqlite3
 from ticket_functions import create_ticket, is_ticket_unique, ticket_callback
 from history_database import *
+
 class ProfileMenu:
-    def __init__(self, root):
+    def __init__(self, root, username):
         self.root = root
+        self.username = username
 
     def display(self):
-        label = tk.Label(self.root, text="Profile Page", font=("Arial", 18))
+        self.frame = ttk.Frame(self.root)
+        self.frame.pack(fill="both", expand=True)
+
+        label = tk.Label(self.frame, text="Profile Page", font=("Arial", 18))
         label.pack(fill="both", expand=True)
+
+        self.create_profile_form()
+
+    def create_profile_form(self):
+        conn = sqlite3.connect('user_database.db')
+        cur = conn.cursor()
+
+        # Fetch user's current profile information
+        cur.execute("SELECT name, age, address, email FROM users WHERE username=?", (self.username,))
+        user_data = cur.fetchone()
+        conn.close()
+
+        if user_data:
+            name, age, address, email = user_data
+
+            # Display current profile information
+            tk.Label(self.frame, text="Name:").pack()
+            self.name_entry = tk.Entry(self.frame)
+            self.name_entry.insert(0, name)
+            self.name_entry.pack()
+
+            tk.Label(self.frame, text="Age:").pack()
+            self.age_entry = tk.Entry(self.frame)
+            self.age_entry.insert(0, age)
+            self.age_entry.pack()
+
+            tk.Label(self.frame, text="Address:").pack()
+            self.address_entry = tk.Entry(self.frame)
+            self.address_entry.insert(0, address)
+            self.address_entry.pack()
+
+            tk.Label(self.frame, text="Email:").pack()
+            self.email_entry = tk.Entry(self.frame)
+            self.email_entry.insert(0, email)
+            self.email_entry.pack()
+
+            tk.Label(self.frame, text="New Password:").pack()
+            self.password_entry = tk.Entry(self.frame, show="*")  # Mask the password input
+            self.password_entry.pack()
+            
+            tk.Label(self.frame, text="Confirm New Password:").pack()
+            self.passwordconfirmation_entry = tk.Entry(self.frame, show="*")  # Mask the password input
+            self.passwordconfirmation_entry.pack()
+            # Button to update profile
+            ttk.Button(self.frame, text="Update Profile", command=self.update_profile).pack()
+        else:
+            messagebox.showerror("Error", "User not found.")
+
+    def update_profile(self):
+        name = self.name_entry.get()
+        age = self.age_entry.get()
+        address = self.address_entry.get()
+        email = self.email_entry.get()
+        new_password = self.password_entry.get()
+
+        # Update user's profile and password in the database
+        conn = sqlite3.connect('user_database.db')
+        cur = conn.cursor()
+        cur.execute("UPDATE users SET name=?, age=?, address=?, email=?, password=? WHERE username=?",
+                    (name, age, address, email, new_password, self.username))
+        conn.commit()
+        conn.close()
+
+        messagebox.showinfo("Success", "Profile updated successfully.")
+
 
 class BusScheduleMenu:
     def __init__(self, root, username):
@@ -168,8 +238,8 @@ def create_new_sidebar(username):
     title_label = tk.Label(sidebar_frame, text="   BusConnect   ", font=("Arial", 18, "bold"), bg="black", fg="white")
     title_label.pack(side="top", fill="x", pady=(50, 50))
 
-    sidebar_contents = [("Profile", ProfileMenu), ("Bus Schedule", BusScheduleMenu), ("Tickets", TicketsMenu),
-                        ("Notifications", NotificationsMenu), ("History", HistoryMenu), ("Log Out", LogoutMenu)]
+    sidebar_contents = [ ("Bus Schedule", BusScheduleMenu), ("Tickets", TicketsMenu),
+                        ("Notifications", NotificationsMenu), ("History", HistoryMenu), ("Change Profile", ProfileMenu), ("Log Out", LogoutMenu)]
 
     main_content_frame = tk.Frame(root, bg="white")
     main_content_frame.pack(side="left", fill="both", expand=True)

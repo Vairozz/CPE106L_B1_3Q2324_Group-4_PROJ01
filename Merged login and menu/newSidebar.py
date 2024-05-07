@@ -1,9 +1,8 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import sqlite3
-from tkinter import messagebox
-from ticket_functions import *
-
+from ticket_functions import create_ticket, is_ticket_unique, ticket_callback
+from history_database import *
 class ProfileMenu:
     def __init__(self, root):
         self.root = root
@@ -20,9 +19,6 @@ class BusScheduleMenu:
 
     def display(self):
         notebook = ttk.Notebook(self.root)
-        style = ttk.Style()
-        style.configure("TNotebook", padding=5)
-        style.configure("TNotebook.Tab", padding=[10, 5], font=('Arial', 10), tabposition='n', width=150, height=50)
         notebook.pack(fill="both", expand=True, padx=10, pady=10)
 
         tabs = [("JOYBUS Schedule", "joybus_info"), 
@@ -75,9 +71,9 @@ class BusScheduleMenu:
                 ticket = create_ticket(ticket_length)
 
             bus_company, origin, destination, time, bus_type, fare = self.selected_item
+            history_callback(self.username, bus_company, origin, destination, time, bus_type, fare)
             ticket_callback(self.username, bus_company, origin, destination, time, bus_type, fare)
-
-
+            
         else:
             messagebox.showwarning("No Selection", "Please select a schedule to generate a ticket.")
 
@@ -85,29 +81,37 @@ class TicketsMenu:
     def __init__(self, root, username):
         self.root = root
         self.username = username
-        self.ticket_label = tk.Label(root, text="", font=("Arial", 18))
-        self.ticket_label.pack(fill="both", expand=True)
+        self.frame = ttk.Frame(self.root)
+        self.frame.pack(fill="both", expand=True)
 
     def display(self):
-        self.ticket_label.config(text="Tickets Page")
-        self.display_user_tickets()
+        self.create_ticket_table()
 
-    def display_user_tickets(self):
-        with sqlite3.connect('tickets.db') as conn:
-            c = conn.cursor()
-            c.execute("SELECT ticket_id FROM tickets WHERE username=?", (self.username,))
-            user_tickets = c.fetchall()
-            if user_tickets:
-                ticket_text = "\n".join([f"Ticket ID: {ticket[0]}" for ticket in user_tickets])
-                self.ticket_label.config(text=f"User {self.username}'s Tickets:\n{ticket_text}")
-            else:
-                self.ticket_label.config(text=f"No tickets found for User {self.username}")
+    def create_ticket_table(self):
+        columns = ("Ticket ID", "Bus Company", "Origin", "Destination", "Time", "Bus Type", "Fare")  # Include "Ticket ID"
+        table = ttk.Treeview(self.frame, columns=columns, show="headings", selectmode="browse")
+        table.pack(fill="both", expand=True)
+        
+        self.fetch_and_display_tickets(table)
+        self.add_table_headings(table, columns)
 
-    def display_ticket(self, ticket_id):
-        self.ticket_label.config(text=f"User {self.username}'s Ticket ID: {ticket_id}")
+    def fetch_and_display_tickets(self, table):
+        conn = sqlite3.connect('tickets.db')
+        cur = conn.cursor()
+        cur.execute("SELECT ticket_id, bus_company, origin, destination, time, bus_type, fare FROM tickets WHERE username=?", (self.username,))
+        tickets_data = cur.fetchall()
+        conn.close()
+
+        for row in tickets_data:
+            table.insert("", "end", values=row)
+
+    def add_table_headings(self, table, columns):
+        for col in columns:
+            table.heading(col, text=col)
+            table.column(col, width=100)  # Adjust column width as needed
 
 class NotificationsMenu:
-    def __init__(self, root):
+    def __init__(self, root, username):  # Modify to accept username
         self.root = root
 
     def display(self):
@@ -115,13 +119,39 @@ class NotificationsMenu:
         label.pack(fill="both", expand=True)
 
 class HistoryMenu:
-    def __init__(self, root):
+    def __init__(self, root, username):
         self.root = root
+        self.username = username
+        self.frame = ttk.Frame(self.root)
+        self.frame.pack(fill="both", expand=True)
 
     def display(self):
-        label = tk.Label(self.root, text="History Page", font=("Arial", 18))
-        label.pack(fill="both", expand=True)
+        self.create_history_table()
 
+    def create_history_table(self):
+        columns = ( "Bus Company", "Origin", "Destination", "Time", "Bus Type", "Fare")
+        table = ttk.Treeview(self.frame, columns=columns, show="headings", selectmode="browse")
+        table.pack(fill="both", expand=True)
+
+        self.fetch_and_display_history(table)
+        self.add_table_headings(table, columns)
+
+    def fetch_and_display_history(self, table):
+        conn = sqlite3.connect('history.db')
+        cur = conn.cursor()
+        cur.execute("SELECT bus_company, origin, destination, time, bus_type, fare FROM history WHERE username=?", (self.username,))
+        tickets_data = cur.fetchall()
+        conn.close()
+
+        for row in tickets_data:
+            table.insert("", "end", values=row)
+
+    def add_table_headings(self, table, columns):
+        for col in columns:
+            table.heading(col, text=col)
+            table.column(col, width=100)
+
+    
 class LogoutMenu:
     def __init__(self, root):
         self.root = root
@@ -152,7 +182,7 @@ def create_new_sidebar(username):
         else:
             for widget in main_content_frame.winfo_children():
                 widget.destroy()
-            menu = menu_class(main_content_frame, username=username)
+            menu = menu_class(main_content_frame, username=username)  # Pass username to relevant menus
             menu.display()
 
     for i, (item, menu_class) in enumerate(sidebar_contents):

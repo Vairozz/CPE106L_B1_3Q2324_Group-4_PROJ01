@@ -1,4 +1,6 @@
-Finished all integration\
-need admin page\
-need to connect log out button to go back to log in\
-some front end design needed
+admin page integrated/
+ui design needed:/
+change profie/
+notification(admin and user)/
+admin edit schedule/
+admin claim ticket/

@@ -10,7 +10,7 @@ cursor.execute('''
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         age INTEGER NOT NULL,
-        address TEXT NOT NULL UNIQUE,
+        address TEXT NOT NULL,
         email TEXT NOT NULL UNIQUE,
         username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL
